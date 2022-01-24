@@ -10,7 +10,9 @@ const AuthScreen = () => {
     const [username, setUsername] = useState('');
 
     return (
-        <div>Please enter your League of Legends summoner name</div>
+        <div className="bg-slate-900">
+            Please enter your League of Legends summoner name
+        </div>
     );
 };
 
