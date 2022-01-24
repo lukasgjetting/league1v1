@@ -11,6 +11,11 @@ const sendApiRequest = async <T>(url: string, options: RequestOptions = {}): Pro
         method: options.method,
         body: options.body == null ? undefined : JSON.stringify(options.body),
     });
+
+    if (result.status >= 400) {
+        throw new Error(await result.text());
+    }
+
     const json = await result.json();
 
     return json;

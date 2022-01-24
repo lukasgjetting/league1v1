@@ -1,32 +1,41 @@
 import { useState } from "react";
+import { Server } from "../utils/enums";
 import sendApiRequest from "../utils/sendApiRequest";
 
-export const getServerSideProps = async () => {
+export const getServerideProps = async () => {
     return {
         props: {},
     };
 };
 
 const AuthScreen = () => {
-    const [summonerName, setSummonerName] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string>();
 
-    const [runePageName, setRunePageName] = useState<string>();
+    const [server, setServer] = useState(Object.values(Server)[0]);
+    const [summonerName, setSummonerName] = useState('');
+
+    const [thirdPartyCode, setthirdPartyCode] = useState<string>();
+    const [token, setToken] = useState<string>();
 
     const startAuthentication = async () => {
         setLoading(true);
         setError(undefined);
 
         try {
-            const newRunePageName = await sendApiRequest<string>('/api/auth/start-authentication', {
+            const result = await sendApiRequest<{
+                token: string;
+                thirdPartyCode: string;
+            }>('/api/auth/start-authentication', {
                 method: 'post',
                 body: {
+                    server,
                     summonerName,  
                 },
             });
 
-            setRunePageName(newRunePageName);
+            setthirdPartyCode(result.thirdPartyCode);
+            setToken(result.token);
         } catch (e: any) {
             setError(e.message);
         } finally {
@@ -39,9 +48,14 @@ const AuthScreen = () => {
         setError(undefined);
 
         try {
-            const token = await sendApiRequest<string>('/api/auth/activate-token', { method: 'post' });
+            await sendApiRequest<string>('/api/auth/activate-token', {
+                method: 'post',
+                body: { token },
+            });
 
-            localStorage.setItem('token', token);
+            localStorage.setItem('token', token!);
+            alert('ur rdy!');
+            window.location.href = 'https://legoland.dk';
         } catch (e: any) {
             setError(e.message);
         } finally {
@@ -57,8 +71,15 @@ const AuthScreen = () => {
             {error && (
                 <span>error: {error}</span>
             )}
-            {runePageName == null ? (
+            {thirdPartyCode == null ? (
                 <>
+                <select value={server} onChange={(e) => setServer(e.target.value as Server)}>
+                    {Object.entries(Server).map(([label, value]) => (
+                        <option key={value} value={value}>
+                            {label}
+                        </option>
+                    ))}
+                </select>
                 <input
                     placeholder="sum name plz"
                     value={summonerName}
@@ -69,9 +90,9 @@ const AuthScreen = () => {
                 </>
             ) : (
                 <>
-                    Rename your first rune page to
+                    Enter third party code 
                     {' '}
-                    <span className="bg-slate-900 rounded-sm px-2 py-0.5 text-white">{runePageName}</span>
+                    <span className="bg-slate-900 rounded-sm px-2 py-0.5 text-white">{thirdPartyCode}</span>
                     <br/>
                     <button className="bg-slate-300" type="button" onClick={verifyRunePage}>ok ready</button>
                 </>

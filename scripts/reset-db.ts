@@ -11,7 +11,10 @@ import {closeConnection, query} from '../utils/db';
             CREATE TABLE users (
                 id INT NOT NULL AUTO_INCREMENT,
                 summonerName VARCHAR(255) NOT NULL,
-                leaguePuuid VARCHAR(255) NULL,
+                server VARCHAR(255) NOT NULL,
+                leaguePuuid VARCHAR(255) NOT NULL,
+                leagueAccountId VARCHAR(255) NOT NULL,
+                leagueSummonerId VARCHAR(255) NOT NULL,
                 verified TINYINT(1) NOT NULL DEFAULT 0,
                 createdAt DATETIME NULL DEFAULT NOW(),
                 PRIMARY KEY (id)
@@ -37,7 +40,7 @@ import {closeConnection, query} from '../utils/db';
             CREATE TABLE user_tokens (
                 id INT NOT NULL AUTO_INCREMENT,
                 userId INT NOT NULL,
-                runePageName VARCHAR(255) NOT NULL,
+                thirdPartyCode VARCHAR(255) NOT NULL,
                 token VARCHAR(255) NOT NULL,
                 active TINYINT(1) NOT NULL DEFAULT 0,
                 lastUsed DATETIME NOT NULL DEFAULT NOW(),

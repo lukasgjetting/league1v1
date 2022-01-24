@@ -2,37 +2,46 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { escape } from "promise-mysql";
 import shortUUID from "short-uuid";
 import { getUserBySummonerName, query } from "../../../utils/db";
+import { getSummonerDetailsByName } from "../../../utils/riotGames";
 
-const runePageNameTranslator = shortUUID('123456789');
+const thirdPartyCodeTranslator = shortUUID('123456789');
 
-const createToken = async (
+const startAuthentication = async (
   req: NextApiRequest,
   res: NextApiResponse<string>
 ) => {
-  const { summonerName } = req.body;
+  const { summonerName, server } = req.body;
 
   let user = await getUserBySummonerName(summonerName);
 
   if (user == null) {
+    const details = await getSummonerDetailsByName(server, summonerName);
+
     await query(`
       INSERT INTO users
-      (summonerName)
-      VALUES (${escape(summonerName)})
+      (summonerName, server, leaguePuuid, leagueAccountId, leagueSummonerId)
+      VALUES (
+        ${escape(summonerName)},
+        ${escape(server)},
+        ${escape(details.puuid)},
+        ${escape(details.accountId)},
+        ${escape(details.id)}
+      )
     `)
 
     user = await getUserBySummonerName(req.body.summonerName);
   }
   
-  const runePageName = `L-${runePageNameTranslator.new().substring(0, 5)}`;
+  const thirdPartyCode = `L-${thirdPartyCodeTranslator.new().substring(0, 5)}`;
   const token = shortUUID.uuid();
 
     await query(`
         INSERT INTO user_tokens
-        (userId, runePageName, token)
-        VALUES (${user.id}, '${runePageName}', '${token}')
+        (userId, thirdPartyCode, token)
+        VALUES (${user.id}, '${thirdPartyCode}', '${token}')
     `);
 
-    res.send(JSON.stringify(runePageName));
+    res.send(JSON.stringify({ token, thirdPartyCode }));
 };
 
-export default createToken;
+export default startAuthentication;
