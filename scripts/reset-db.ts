@@ -1,10 +1,8 @@
 import 'dotenv/config';
-import {closeConnection, init, query} from '../utils/db';
+import {closeConnection, query} from '../utils/db';
 
 (async () => {
     try {
-        await init();
-
         await query('DROP TABLE IF EXISTS users;');
         await query('DROP TABLE IF EXISTS user_tokens;');
         await query('DROP TABLE IF EXISTS matches;');
@@ -12,9 +10,9 @@ import {closeConnection, init, query} from '../utils/db';
         await query(`
             CREATE TABLE users (
                 id INT NOT NULL AUTO_INCREMENT,
-                username VARCHAR(255) NOT NULL,
-                verified TINYINT(1) NOT NULL DEFAULT 0,
+                summonerName VARCHAR(255) NOT NULL,
                 leaguePuuid VARCHAR(255) NULL,
+                verified TINYINT(1) NOT NULL DEFAULT 0,
                 createdAt DATETIME NULL DEFAULT NOW(),
                 PRIMARY KEY (id)
             );
@@ -46,7 +44,9 @@ import {closeConnection, init, query} from '../utils/db';
                 createdAt DATETIME NOT NULL DEFAULT NOW(),
                 PRIMARY KEY (id)
             );
-        `)
+        `);
+
+        console.log('Done resetting database');
     } catch (e) {
         console.error(e);
     } finally {
